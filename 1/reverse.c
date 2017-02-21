@@ -8,27 +8,33 @@
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <string.h>
 
-void getparams(int argc, char **argv, size_t *buflen, char **inname,
-               char **outname);
+void getparams(int argc, char **argv, size_t *buflen, char **inname);
 
 void getfilehandles(char *inname, char *outname, int *infd, int *outfd);
 
-void copy(int infd, int outfd, size_t buflen);
+void reverse(int infd, int outfd, size_t buflen);
 
 int main(int argc, char **argv)
 {
 
   char *inname;
-  char *outname;
   size_t buflen;
   int infd;
   int outfd;
 
-  getparams(argc, argv, &buflen, &inname, &outname);
+  getparams(argc, argv, &buflen, &inname);
+
+  //Set Outname:
+  char *suffix = ".rev";
+  char outname[strlen(inname)+strlen(suffix)];
+  strcpy(outname, inname);
+  strcat(outname, suffix);
+
   getfilehandles(inname, outname, &infd, &outfd);
   
-  copy(infd, outfd, buflen);
+  reverse(infd, outfd, buflen);
 
   if (close(outfd) == -1) {
     perror("Fehler beim Schließen der Ausgabedatei");
@@ -43,8 +49,7 @@ int main(int argc, char **argv)
   return EXIT_SUCCESS;
 }
 
-void getparams(int argc, char **argv, size_t *buflen, char **inname,
-               char **outname)
+void getparams(int argc, char **argv, size_t *buflen, char **inname)
 {
   int opterrflag = 0;
   int opt;
@@ -71,17 +76,11 @@ void getparams(int argc, char **argv, size_t *buflen, char **inname,
     opterrflag = 1;
   }
 
-  if (optind < argc) {
-    *outname = argv[optind];
-  } else {
-    opterrflag = 1;
-  }
-
   if (opterrflag) {
     fprintf(stderr,
             "Benutzung:\n"
             "\n"
-            "  %s [-b n] <Eingabedatei> <Ausgabedatei>\n"
+            "  %s [-b n] <Eingabedatei>\n"
             "\n" "b[=1]: Puffergröße mit 0 < n <= 1024^2\n", argv[0]);
     exit(EXIT_FAILURE);
   }
@@ -90,11 +89,17 @@ void getparams(int argc, char **argv, size_t *buflen, char **inname,
 void getfilehandles(char *inname, char *outname, int *infd, int *outfd)
 {
 	*infd = open(inname, O_RDONLY);
-	*outfd = open(outname, O_WRONLY);
+  *outfd = open(outname, O_WRONLY);
+  if(errno){
+    *outfd = open(outname, O_WRONLY | O_CREAT);
+  }else{
+    fprintf(stderr, "Datei %s existiert bereits!\n", outname);
+  }
 }
 
-void copy(int infd, int outfd, size_t buflen)
+void reverse(int infd, int outfd, size_t buflen)
 {
+  //TODO: Implementieren! Bisher wird nur kopiert!
 	ssize_t numRead = 0;
 	char buf[buflen];
 	do{
