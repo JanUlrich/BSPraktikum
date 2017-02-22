@@ -34,13 +34,14 @@ int main(int argc, char **argv)
 }
 
 void printDir(char *dirname){
-  fprintf(stderr, "\n%s:\n", dirname);
   DIR* directory = opendir(dirname);
   if(errno == ENOTDIR){ //Just show a single file:
+      printFileStats("", dirname);
   }else if(errno){
     //Other error. Just ignore!
     fprintf(stderr, "Error %d\n", errno);
   }else{
+    fprintf(stderr, "\n%s:\n", dirname);
     struct dirent* d;
     while(1){
       d = readdir(directory);
@@ -87,7 +88,7 @@ void printFileStats(char* dirname, char *filename){
   char* sep = "/";
   char fullName[strlen(dirname)+strlen(sep)+strlen(filename)];
   strcpy(fullName, dirname);
-  strcat(fullName, sep);
+  if(strlen(dirname)>0)strcat(fullName, sep);
   strcat(fullName, filename);
 
   struct stat s;
