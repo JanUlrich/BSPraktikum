@@ -91,19 +91,26 @@ void getfilehandles(char *inname, char *outname, int *infd, int *outfd)
 {
 	*infd = open(inname, O_RDONLY);
 	*outfd = open(outname, O_WRONLY);
-  if(errno){
-    *outfd = open(outname, O_WRONLY | O_CREAT);
-  }else{
-    fprintf(stderr, "Datei %s existiert bereits!\n", outname);
+  if(*outfd != -1){
+    fprintf(stderr, "Zieldatei %s existiert bereits! Überschreiben?\n[y] zum bestätigen", outname);
+    char x = ' ';
+    scanf("%c", &x);
+    if (x != 'y'){
+      perror("Abbruch");
+      exit(EXIT_FAILURE);
+    }
+    else {
+      *outfd = open(outname, O_WRONLY | O_CREAT | O_APPEND);//Für die new file sind die Rechte notwendig
+    }
   }
 }
 
 void copy(int infd, int outfd, size_t buflen)
 {
-	ssize_t numRead = 0;
+	ssize_t numRead = 0;//init
 	char buf[buflen];
 	do{
-		numRead = read(infd, buf, buflen);	
-		write(outfd, buf, buflen);
-	}while(numRead > 0);
+		numRead = read(infd, buf, buflen); // Am Ende einer File steht die NULL, als 0 überschrieben
+		write(outfd, buf, buflen);         // Dementsprechend solange in die neue File schreiben
+	}while(numRead > 0);//solange es einen Bitstrom gibt, ist numRead > 0
 }
