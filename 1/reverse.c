@@ -10,22 +10,20 @@
 #include <unistd.h>
 #include <string.h>
 
-void getparams(int argc, char **argv, size_t *buflen, char **inname);
+void getparams(int argc, char **argv, char **inname);
 
 void getfilehandles(char *inname, char *outname, int *infd, int *outfd);
 
-void reverse(int infd, int outfd, size_t buflen);
+void reverse(int infd, int outfd);
 
 int main(int argc, char **argv)
 {
 
   char *inname;
-  size_t buflen;
   int infd;
   int outfd;
 
-  getparams(argc, argv, &buflen, &inname);
-
+  getparams(argc, argv, &inname);
   //Set Outname:
   char *suffix = ".rev";
   char outname[strlen(inname)+strlen(suffix)];
@@ -34,9 +32,10 @@ int main(int argc, char **argv)
 
   getfilehandles(inname, outname, &infd, &outfd);
   
-  reverse(infd, outfd, buflen);
+  reverse(infd, outfd);
 
   if (close(outfd) == -1) {
+    //printf("%d %d",errno, EBADF);
     perror("Fehler beim Schließen der Ausgabedatei");
     exit(EXIT_FAILURE);
   }
@@ -49,26 +48,10 @@ int main(int argc, char **argv)
   return EXIT_SUCCESS;
 }
 
-void getparams(int argc, char **argv, size_t *buflen, char **inname)
+void getparams(int argc, char **argv, char **inname)
 {
   int opterrflag = 0;
   int opt;
-
-  /* Standard-Wert */
-  *buflen = 1;
-
-  /* Kommandozeilenoptionen verarbeiten */
-  while ((opt = getopt(argc, argv, "b:")) != -1) {
-    switch (opt) {
-    case 'b':
-      opterrflag = sscanf(optarg, "%zu", buflen) != 1 || *buflen <= 0
-        || *buflen >= 1024 * 1024;
-      break;
-    case '?':
-      opterrflag = 1;
-      break;
-    }
-  }
 
   if (optind < argc) {
     *inname = argv[optind++];
@@ -80,8 +63,7 @@ void getparams(int argc, char **argv, size_t *buflen, char **inname)
     fprintf(stderr,
             "Benutzung:\n"
             "\n"
-            "  %s [-b n] <Eingabedatei>\n"
-            "\n" "b[=1]: Puffergröße mit 0 < n <= 1024^2\n", argv[0]);
+            "  %s <Eingabedatei>\n", argv[0]);
     exit(EXIT_FAILURE);
   }
 }
@@ -89,21 +71,31 @@ void getparams(int argc, char **argv, size_t *buflen, char **inname)
 void getfilehandles(char *inname, char *outname, int *infd, int *outfd)
 {
 	*infd = open(inname, O_RDONLY);
-  *outfd = open(outname, O_WRONLY);
-  if(errno){
-    *outfd = open(outname, O_WRONLY | O_CREAT);
-  }else{
-    fprintf(stderr, "Datei %s existiert bereits!\n", outname);
+  *outfd = open(outname, O_WRONLY| O_APPEND);
+  if(*outfd != -1){
+    fprintf(stderr, "Zieldatei %s existiert bereits! UEberschreiben?\n[y] zum bestaetigen\n", outname);
+    char x = ' ';
+    scanf("%c", &x);
+    if (x != 'y'){
+      perror("Abbruch");
+      exit(EXIT_FAILURE);
+    }
+    else {
+      *outfd = open(outname, O_WRONLY | O_CREAT);
+    }
   }
 }
 
-void reverse(int infd, int outfd, size_t buflen)
+void reverse(int infd, int outfd)
 {
-  //TODO: Implementieren! Bisher wird nur kopiert!
-	ssize_t numRead = 0;
-	char buf[buflen];
-	do{
-		numRead = read(infd, buf, buflen);	
-		write(outfd, buf, buflen);
-	}while(numRead > 0);
+  char Buf = '\0';
+  lseek(infd,-1,SEEK_END);
+  do{
+    read(infd,&Buf,1);
+    lseek(infd,-1,SEEK_CUR);
+    printf("%c", Buf);
+    write(outfd,&Buf,1);
+  }while(0 != lseek(infd,-1,SEEK_CUR));
+  read(infd,&Buf,1);
+  write(outfd,&Buf,1);
 }
