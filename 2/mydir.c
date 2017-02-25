@@ -48,7 +48,7 @@ void printDir(char *dirname){
       if(d == NULL)break;
     
       char* sep = "/";
-      char subDirName[strlen(dirname)+strlen(sep)+strlen(d->d_name)];
+      char subDirName[strlen(dirname)+strlen(sep)+strlen(d->d_name)+1];
       strcpy(subDirName, dirname);
       strcat(subDirName, sep);
       strcat(subDirName, d->d_name);

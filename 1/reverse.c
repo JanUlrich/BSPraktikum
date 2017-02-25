@@ -26,7 +26,7 @@ int main(int argc, char **argv)
   getparams(argc, argv, &inname);
   //Set Outname:
   char *suffix = ".rev";
-  char outname[strlen(inname)+strlen(suffix)];
+  char outname[strlen(inname)+strlen(suffix)+1];
   strcpy(outname, inname);
   strcat(outname, suffix);
 
