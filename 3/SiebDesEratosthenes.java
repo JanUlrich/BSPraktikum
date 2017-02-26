@@ -7,13 +7,12 @@ public class SiebDesEratosthenes {
     public SiebDesEratosthenes(int maxN){
         Primzahltester start = new Primzahltester(2);
         for(int i = 3;i<maxN;i++){
-            start.setNextTest(i);
-            start.run();
+            start.test(i);
         }
     }
 }
 
-class Primzahltester implements Runnable {
+class Primzahltester {
     private boolean blocked;
     private final int prim;
     private Primzahltester nextPrim;
@@ -25,41 +24,25 @@ class Primzahltester implements Runnable {
         blocked = false;
         System.out.println(prim); //Primzahl ausgeben
     }
-    private synchronized void enterBlock(){
-        while (blocked);
-        blocked = true;
-    }
 
-    private synchronized void exitBlock(){
-        blocked = false;
-    }
-
-    public synchronized Primzahltester setNextTest(int toTest){
-        //enterBlock();
-        this.toTest = toTest;
-        //exitBlock();
-        return this;
-    }
-
-    private synchronized Primzahltester setNextPrim(Primzahltester nextPrim){
-        this.nextPrim = nextPrim;
-        return this;
-    }
-
-    @Override
-    public synchronized void run() {
-        //enterBlock();
+    public synchronized void test(final int toTest){
         if(toTest%prim == 0) {
-        //Mache nichts. Zahl ist keine Primzahl
+            //Mache nichts. Zahl ist keine Primzahl
         }else if(toTest > prim )//Nur wenn es noch einen Sinn hat weiter zu prüfen:
         {
             if(this.nextPrim == null){
-                setNextPrim(new Primzahltester(toTest));
+                this.nextPrim = (new Primzahltester(toTest));
             }
             //Weiterprüfen:
-            new Thread(nextPrim.setNextTest(toTest)).start();
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    nextPrim.test(toTest);
+                }
+            }).start();
             //nextPrim.setNextTest(toTest).run();
         }
-        //exitBlock();
     }
+
+
 }
