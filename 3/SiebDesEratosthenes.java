@@ -7,7 +7,8 @@ public class SiebDesEratosthenes {
     public SiebDesEratosthenes(int maxN){
         Primzahltester start = new Primzahltester(2);
         for(int i = 3;i<maxN;i++){
-            start.testeZahl(i);
+            start.setNextTest(i);
+            start.run();
         }
     }
 }
@@ -24,22 +25,6 @@ class Primzahltester implements Runnable {
         blocked = false;
         System.out.println(prim); //Primzahl ausgeben
     }
-
-    public synchronized void testeZahl(int n){
-        if(n%prim == 0) {
-            //Mache nichts. Zahl ist keine Primzahl
-        }else if(n > prim )//Nur wenn es noch einen Sinn hat weiter zu prüfen:
-        {
-            enterBlock();
-            if(this.nextPrim == null){
-                setNextPrim(new Primzahltester(n));
-            }
-            //Weiterprüfen:
-            new Thread(nextPrim.setNextTest(n)).start();
-            exitBlock();
-        }
-    }
-
     private synchronized void enterBlock(){
         while (blocked);
         blocked = true;
@@ -49,18 +34,32 @@ class Primzahltester implements Runnable {
         blocked = false;
     }
 
-    private synchronized Primzahltester setNextTest(int toTest){
+    public synchronized Primzahltester setNextTest(int toTest){
+        //enterBlock();
         this.toTest = toTest;
+        //exitBlock();
         return this;
     }
 
-    private Primzahltester setNextPrim(Primzahltester nextPrim){
+    private synchronized Primzahltester setNextPrim(Primzahltester nextPrim){
         this.nextPrim = nextPrim;
         return this;
     }
 
     @Override
-    public void run() {
-        testeZahl(toTest);
+    public synchronized void run() {
+        //enterBlock();
+        if(toTest%prim == 0) {
+        //Mache nichts. Zahl ist keine Primzahl
+        }else if(toTest > prim )//Nur wenn es noch einen Sinn hat weiter zu prüfen:
+        {
+            if(this.nextPrim == null){
+                setNextPrim(new Primzahltester(toTest));
+            }
+            //Weiterprüfen:
+            new Thread(nextPrim.setNextTest(toTest)).start();
+            //nextPrim.setNextTest(toTest).run();
+        }
+        //exitBlock();
     }
 }
