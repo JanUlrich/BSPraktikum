@@ -1,17 +1,20 @@
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.*;
 
 class MatrixMultiplikation {
 
     public static void main(String args[]) throws InterruptedException {
         MatrixMultiplikation test = new MatrixMultiplikation(10);
-        test.run();
+        test.run2();
     }
 
     private ExecutorService threadPool;
     private int n;
 
     public MatrixMultiplikation(int n){
-        threadPool =Executors.newFixedThreadPool(n*n);
+        threadPool = Executors.newFixedThreadPool(n*n);
         this.n = n;
     }
 
@@ -29,6 +32,50 @@ class MatrixMultiplikation {
             System.out.println("Error!");
     }
 
+    /*
+     * Herangehensweise 2:
+     * Nur so viele Threads erstellen, wie Kerne vorhanden sind.
+     */
+    public void run2() throws InterruptedException {
+        int cores = Runtime.getRuntime().availableProcessors();
+        ArrayList<MultiplyMatrixTask> subTasks = new ArrayList<MultiplyMatrixTask>(n*n);
+        Matrix matrixIn = Matrix.randomMatrix(n);
+        Matrix matrixOut = Matrix.randomMatrix(n);
+
+        for(int l = 0; l<n;l++)for(int r = 0; r<n;r++){
+            subTasks.add(new MultiplyMatrixTask(matrixIn, matrixOut,l,r));
+        }
+        int numTasksPerCore = n*n/cores;
+        for(int c = 1; c<cores;c++){
+                MultiplyMatrixTaskGroup task = new MultiplyMatrixTaskGroup(subTasks.subList((c-1)*numTasksPerCore,c*numTasksPerCore));
+                threadPool.submit(task);
+        }
+        MultiplyMatrixTaskGroup task = new MultiplyMatrixTaskGroup(subTasks.subList((cores-1)*numTasksPerCore,subTasks.size()));
+        threadPool.submit(task);
+
+        threadPool.shutdown();
+        boolean success = threadPool.awaitTermination(10, TimeUnit.SECONDS);
+        if(success)
+            System.out.println(matrixOut);
+        else
+            System.out.println("Error!");
+    }
+
+}
+
+class MultiplyMatrixTaskGroup implements Runnable {
+
+    List<MultiplyMatrixTask> subTasks;
+    public MultiplyMatrixTaskGroup(List<MultiplyMatrixTask> subTasks){
+        this.subTasks = subTasks;
+    }
+
+    @Override
+    public void run() {
+        for(MultiplyMatrixTask task : subTasks){
+            task.run();
+        }
+    }
 }
 
 class MultiplyMatrixTask implements Runnable {
