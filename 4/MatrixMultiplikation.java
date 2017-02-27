@@ -7,7 +7,9 @@ class MatrixMultiplikation {
 
     public static void main(String args[]) throws InterruptedException {
         MatrixMultiplikation test = new MatrixMultiplikation(10);
-        test.run2();
+        test.run();
+        MatrixMultiplikation test2 = new MatrixMultiplikation(10);
+        test2.run2();
     }
 
     private ExecutorService threadPool;
