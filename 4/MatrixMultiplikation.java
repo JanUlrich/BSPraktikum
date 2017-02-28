@@ -23,6 +23,8 @@ class MatrixMultiplikation {
     public void run() throws InterruptedException {
         Matrix matrixIn = Matrix.randomMatrix(n);
         Matrix matrixOut = Matrix.randomMatrix(n);
+
+        System.out.println(matrixIn);
         for(int l = 0; l<n;l++)for(int r = 0; r<n;r++){
             threadPool.submit(new MultiplyMatrixTask(matrixIn, matrixOut,l,r));
         }
