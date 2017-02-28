@@ -40,6 +40,7 @@ class MatrixMultiplikation {
      */
     public void run2() throws InterruptedException {
         int cores = Runtime.getRuntime().availableProcessors();
+        System.out.println(cores);
         ArrayList<MultiplyMatrixTask> subTasks = new ArrayList<MultiplyMatrixTask>(n*n);
         Matrix matrixIn = Matrix.randomMatrix(n);
         Matrix matrixOut = Matrix.randomMatrix(n);
