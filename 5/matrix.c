@@ -113,7 +113,7 @@ void squareVersion2(int** input, int** output, int n){
 		argPointer[numThreads] = arg;
 	}
 
-	for(int numThreads=0;i<MAX_THREADS;numThreads++){
+	for(int numThreads=0;numThreads<MAX_THREADS;numThreads++){
 		pthread_join(threads[numThreads],NULL);
 		free(argPointer[numThreads]);
 	}
