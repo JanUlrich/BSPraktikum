@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include <omp.h>
 
 void getparams(int argc, char **argv, int *stripes);
 double Untersumme(int n);
@@ -23,7 +24,9 @@ double Untersumme(int stripes)
 {
     double n = stripes;
     double Ergebnis=0;
+    #pragma omp parallel for
     for (int i=1; i<=stripes; i=i+1){
+      #pragma omp critical
       Ergebnis = Ergebnis + (1/n)*sqrt(1-pow(i/n,2));
     }
  
@@ -34,9 +37,10 @@ double Obersumme(int stripes)
 {
     double n = stripes;
     double Ergebnis=0;
-    for (int i=0; i<=(stripes-1); i++){
+    #pragma omp parallel for
+    for (int i=0; i<=(stripes-1); i++)
+      #pragma omp critical
       Ergebnis = Ergebnis + (1/n)*sqrt(1-pow(i/n,2));
-    }
  
     return 4*Ergebnis;
 }
