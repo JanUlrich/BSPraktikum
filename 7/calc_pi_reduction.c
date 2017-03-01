@@ -24,9 +24,9 @@ double Untersumme(int stripes)
 {
     double n = stripes;
     double Ergebnis=0;
-    #pragma omp parallel for
+    #pragma omp parallel for \
+      reduction(+:Ergebnis)
     for (int i=1; i<=stripes; i=i+1){
-      #pragma omp reduction
       Ergebnis = Ergebnis + (1/n)*sqrt(1-pow(i/n,2));
     }
  
@@ -37,9 +37,9 @@ double Obersumme(int stripes)
 {
     double n = stripes;
     double Ergebnis=0;
-    #pragma omp parallel for
+    #pragma omp parallel for \
+      reduction(+:Ergebnis)
     for (int i=0; i<=(stripes-1); i++)
-      #pragma omp reduction
       Ergebnis = Ergebnis + (1/n)*sqrt(1-pow(i/n,2));
  
     return 4*Ergebnis;
