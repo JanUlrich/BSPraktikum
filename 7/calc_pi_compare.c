@@ -7,11 +7,22 @@
 #include <omp.h>
 #include "calc_pi_variations.h"
 
+void getparams(int argc, char **argv, int *stripes);
+
 int main(int argc, char **argv){
 	int stripes;
-	void getparams(int argc, char **argv, int *stripes);
-	Obersumme_seq(stripes);
-	Obersumme_seq(10);
+	getparams(argc,argv,&stripes);
+	printf("Lower Bound (sequential): %.7f\n",Untersumme_seq(stripes));
+	printf("Upper Bound (sequential): %.7f\n",Obersumme_seq(stripes));
+
+	printf("Lower Bound (crit): %.7f\n",Untersumme_crit(stripes));
+	printf("Upper Bound (crit): %.7f\n",Obersumme_crit(stripes));
+
+	printf("Lower Bound (atom): %.7f\n",Untersumme_atom(stripes));
+	printf("Upper Bound (atom): %.7f\n",Obersumme_atom(stripes));
+
+	printf("Lower Bound (red): %.7f\n",Untersumme_red(stripes));
+	printf("Upper Bound (red): %.7f\n",Obersumme_red(stripes));
 }
 
 
