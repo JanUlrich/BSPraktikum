@@ -50,7 +50,6 @@ void signal_RECV(int signum)
   recvCounter++;
   if(recvCounter%8==0){ //ganzes Byte empfangen:
     if(recvByte == 0){//Ende der Übertragung
-      printf("\n");
       exit(0);
     }
     recvCounter=0;
@@ -75,19 +74,20 @@ int main(int argc, char **argv)
   if(fid == 0){//CHILD
     registerChildSignals();
     pid = getppid();//Diese Funktion ist immer erfolgreich
-    char* sendstring="Hallo Welt";
-    while(*sendstring!='\0')
-      sendByte(*sendstring++, pid);
+
+    //Sende User-Input:
+    char c;
+    do{
+      c = getchar();
+      sendByte(c, pid);
+    }while(c!='\n');
     sendByte('\0',pid);
+
   }else{//PARENT
     id = fid;
     registerParentSignals();
     kill(fid, SIGUSR1); //Bereit zum Empfangen
-    while(1){
-      while(status == 0){
-        sleep(1);
-      }
-    }
+    while(1); //Auf Übertragung warten
   }
   return EXIT_SUCCESS;
 }
@@ -101,9 +101,7 @@ void sendByte(uint8_t b, int toPid){
 }
 
 void sendSignal(int id, int sig){
-  while(status == 0){
-    sleep(1);
-  }
+  while(status == 0);
   status = 0;
   if(sig == 0){
     kill(id, SIGUSR1);
